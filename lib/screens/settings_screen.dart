@@ -42,7 +42,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     'com.lazada': Icons.shopping_cart,
     'com.blibli': Icons.store,
     'com.tiktok': Icons.music_note,
-    'com.amazon': Icons.amazon,
+    'com.amazon': Icons.shopping_cart,
     'com.bukalapak': Icons.shop,
     'com.olx': Icons.sell,
   };
@@ -251,7 +251,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade400, style: BorderStyle.dashed),
+                  border: Border.all(color: Colors.grey.shade400),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
