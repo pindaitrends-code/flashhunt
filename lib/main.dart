@@ -3,6 +3,11 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'screens/home_screen.dart';
 import 'screens/settings_screen.dart';
+import 'services/storage_service.dart';
+import 'services/websocket_mirror.dart';
+import 'services/notification_listener.dart';
+import 'services/accessibility_scanner.dart';
+import 'services/webhook_service.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -13,6 +18,11 @@ void main() async {
   await Permission.notification.request();
   await Permission.systemAlertWindow.request();
   await Permission.scheduleExactAlarm.request();
+  
+  await StorageService.initialize();
+  await NotificationListenerService.initialize();
+  await AccessibilityScanner.initialize();
+  await WebSocketMirrorService.initialize();
   
   runApp(const MyApp());
 }
