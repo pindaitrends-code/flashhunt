@@ -32,7 +32,8 @@ class AccessibilityScanner {
     } catch (e) {
       print('❌ Gagal request accessibility: $e');
       try {
-        await DeviceApps.openAppSettings();
+        final String packageName = 'com.flashhunt.flashhunt';
+        await DeviceApps.openAppSettings(packageName);
       } catch (e2) {
         print('❌ Gagal buka settings: $e2');
       }
