@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">FlashHunt</string>
+    <string name="accessibility_description">FlashHunt - Deteksi flash sale otomatis dari marketplace</string>
+</resources>
