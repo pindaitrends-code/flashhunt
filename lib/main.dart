@@ -15,9 +15,7 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  await Permission.notification.request();
-  await Permission.systemAlertWindow.request();
-  await Permission.scheduleExactAlarm.request();
+  await _requestAllPermissions();
   
   await StorageService.initialize();
   await NotificationListenerService.initialize();
@@ -25,6 +23,32 @@ void main() async {
   await WebSocketMirrorService.initialize();
   
   runApp(const MyApp());
+}
+
+Future<void> _requestAllPermissions() async {
+  // 1️⃣ NOTIFIKASI
+  await Permission.notification.request();
+  
+  // 2️⃣ SYSTEM ALERT WINDOW
+  if (await Permission.systemAlertWindow.isDenied) {
+    await Permission.systemAlertWindow.request();
+  }
+  
+  // 3️⃣ SCHEDULE EXACT ALARM
+  await Permission.scheduleExactAlarm.request();
+  
+  // 4️⃣ AKSESIBILITAS - LANGSUNG POP-UP!
+  try {
+    final bool isEnabled = await AccessibilityScanner.isAccessibilityEnabled();
+    if (!isEnabled) {
+      print('🔔 Meminta izin aksesibilitas...');
+      await AccessibilityScanner.requestAccessibility();
+    } else {
+      print('✅ Aksesibilitas sudah aktif');
+    }
+  } catch (e) {
+    print('❌ Gagal request aksesibilitas: $e');
+  }
 }
 
 class MyApp extends StatelessWidget {

@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:device_apps/device_apps.dart';
 import '../services/websocket_mirror.dart';
 import '../services/webhook_service.dart';
+import '../services/accessibility_scanner.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -144,6 +145,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
   }
 
+  Future<void> _openAccessibilitySettings() async {
+    try {
+      await AccessibilityScanner.requestAccessibility();
+    } catch (e) {
+      print('❌ Error: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -166,6 +175,53 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // ♿ AKSESIBILITAS
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.green, width: 2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.accessibility, color: Colors.green),
+                        SizedBox(width: 8),
+                        Text(
+                          '♿ Izin Aksesibilitas (WAJIB!)',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Aktifkan aksesibilitas agar FlashHunt bisa membaca layar, notifikasi, dan auto-click',
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: _openAccessibilitySettings,
+                            icon: const Icon(Icons.settings),
+                            label: const Text('Buka Aksesibilitas'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              foregroundColor: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // 🔑 TOKEN APIFY
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -175,11 +231,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Row(children: [
-                      Icon(Icons.key, color: Colors.orange),
-                      SizedBox(width: 8),
-                      Text('🔑 Token Apify', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                    ]),
+                    const Row(
+                      children: [
+                        Icon(Icons.key, color: Colors.orange),
+                        SizedBox(width: 8),
+                        Text(
+                          '🔑 Token Apify',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 8),
                     TextField(
                       obscureText: true,
@@ -196,13 +257,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              Row(children: [
-                const Expanded(child: Text('🏪 Marketplace & Afiliasi', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
-                Text('${_marketplacePackages.where((p) => _marketplaceEnabled[p] ?? false).length} aktif', style: TextStyle(fontSize: 12, color: Colors.grey)),
-              ]),
+
+              // 🏪 MARKETPLACE
+              Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      '🏪 Marketplace & Afiliasi',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Text(
+                    '${_marketplacePackages.where((p) => _marketplaceEnabled[p] ?? false).length} aktif',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
+              ),
               const SizedBox(height: 4),
-              const Text('🔍 Otomatis deteksi marketplace terinstal.', style: TextStyle(fontSize: 12, color: Colors.grey)),
+              const Text(
+                '🔍 Otomatis deteksi marketplace terinstal.',
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
               const SizedBox(height: 16),
+
               ..._marketplacePackages.map((pkg) {
                 final name = _defaultMarketplaces[pkg] ?? pkg;
                 final isInstalled = _marketplaceInstalled[pkg] ?? false;
@@ -215,68 +292,143 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     padding: const EdgeInsets.all(12),
                     child: Row(
                       children: [
-                        Switch(value: isEnabled, onChanged: (value) => setState(() => _marketplaceEnabled[pkg] = value), activeColor: Colors.green),
-                        Container(width: 40, height: 40, decoration: BoxDecoration(color: isEnabled ? Colors.grey.shade800 : Colors.grey.shade700, borderRadius: BorderRadius.circular(8)),
-                          child: Icon(icon, color: isInstalled ? Colors.green : Colors.grey.shade500)),
-                        const SizedBox(width: 12),
-                        Expanded(flex: 2, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Row(children: [
-                            Text(name, style: TextStyle(fontWeight: FontWeight.bold, color: isEnabled ? Colors.white : Colors.grey.shade500)),
-                            const SizedBox(width: 8),
-                            if (isInstalled) Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(color: Colors.green.withOpacity(0.2), borderRadius: BorderRadius.circular(4)),
-                              child: const Text('✓ Terinstal', style: TextStyle(fontSize: 9, color: Colors.green, fontWeight: FontWeight.bold))),
-                          ]),
-                          Text(pkg, style: TextStyle(fontSize: 10, color: isEnabled ? Colors.grey.shade500 : Colors.grey.shade700)),
-                        ])),
-                        Expanded(flex: 3, child: TextField(
-                          enabled: isEnabled,
-                          decoration: InputDecoration(
-                            hintText: isInstalled ? 'ID Afiliasi' : 'Tidak terinstal',
-                            border: const OutlineInputBorder(),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            isDense: true,
+                        Switch(
+                          value: isEnabled,
+                          onChanged: (value) => setState(() => _marketplaceEnabled[pkg] = value),
+                          activeColor: Colors.green,
+                        ),
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: isEnabled ? Colors.grey.shade800 : Colors.grey.shade700,
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          controller: TextEditingController(text: _marketplaceAffiliates[pkg] ?? ''),
-                          onChanged: (value) => _marketplaceAffiliates[pkg] = value,
-                        )),
+                          child: Icon(icon, color: isInstalled ? Colors.green : Colors.grey.shade500),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          flex: 2,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    name,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: isEnabled ? Colors.white : Colors.grey.shade500,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  if (isInstalled)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: Colors.green.withOpacity(0.2),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: const Text(
+                                        '✓ Terinstal',
+                                        style: TextStyle(fontSize: 9, color: Colors.green, fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              Text(
+                                pkg,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: isEnabled ? Colors.grey.shade500 : Colors.grey.shade700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          flex: 3,
+                          child: TextField(
+                            enabled: isEnabled,
+                            decoration: InputDecoration(
+                              hintText: isInstalled ? 'ID Afiliasi' : 'Tidak terinstal',
+                              border: const OutlineInputBorder(),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              isDense: true,
+                            ),
+                            controller: TextEditingController(text: _marketplaceAffiliates[pkg] ?? ''),
+                            onChanged: (value) => _marketplaceAffiliates[pkg] = value,
+                          ),
+                        ),
                         if (!_defaultMarketplaces.containsKey(pkg))
-                          IconButton(icon: const Icon(Icons.close, color: Colors.red), onPressed: () => _removeMarketplace(pkg)),
+                          IconButton(
+                            icon: const Icon(Icons.close, color: Colors.red),
+                            onPressed: () => _removeMarketplace(pkg),
+                          ),
                       ],
                     ),
                   ),
                 );
               }).toList(),
+
               const SizedBox(height: 16),
+
+              // ➕ TAMBAH MARKETPLACE
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey.shade400),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Text('➕ Tambah Marketplace Manual', style: TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  Row(children: [
-                    Expanded(child: TextField(
-                      decoration: const InputDecoration(labelText: 'Nama', border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4), isDense: true),
-                      onChanged: (v) => _newMarketplaceName = v,
-                    )),
-                    const SizedBox(width: 8),
-                    Expanded(child: TextField(
-                      decoration: const InputDecoration(labelText: 'Package', border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4), isDense: true),
-                      onChanged: (v) => _newMarketplacePackage = v,
-                    )),
-                    const SizedBox(width: 8),
-                    ElevatedButton(onPressed: _addNewMarketplace, child: const Text('Tambah')),
-                  ]),
-                  const Text('⚠️ Package harus sesuai dengan aplikasi di HP', style: TextStyle(fontSize: 10, color: Colors.orange)),
-                ]),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('➕ Tambah Marketplace Manual', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            decoration: const InputDecoration(
+                              labelText: 'Nama',
+                              border: OutlineInputBorder(),
+                              contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              isDense: true,
+                            ),
+                            onChanged: (v) => _newMarketplaceName = v,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: TextField(
+                            decoration: const InputDecoration(
+                              labelText: 'Package',
+                              border: OutlineInputBorder(),
+                              contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              isDense: true,
+                            ),
+                            onChanged: (v) => _newMarketplacePackage = v,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: _addNewMarketplace,
+                          child: const Text('Tambah'),
+                        ),
+                      ],
+                    ),
+                    const Text(
+                      '⚠️ Package harus sesuai dengan aplikasi di HP',
+                      style: TextStyle(fontSize: 10, color: Colors.orange),
+                    ),
+                  ],
+                ),
               ),
+
               const SizedBox(height: 16),
               const Divider(),
+
+              // 📡 WEBSOCKET
               SwitchListTile(
                 title: const Text('🌐 Aktifkan WebSocket'),
                 subtitle: const Text('Kirim data flash sale ke server'),
@@ -298,16 +450,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 controller: TextEditingController(text: _wsUrl),
                 onChanged: (v) => _wsUrl = v,
               ),
+
               const SizedBox(height: 16),
               const Divider(),
+
+              // 🔔 NOTIFIKASI
               SwitchListTile(
                 title: const Text('🔔 Aktifkan Notifikasi'),
                 subtitle: const Text('Deteksi notifikasi flash sale otomatis'),
                 value: _enableNotification,
                 onChanged: (v) => setState(() => _enableNotification = v),
               ),
+
               const SizedBox(height: 20),
-              ElevatedButton(onPressed: _saveSettings, child: const Text('💾 Simpan Pengaturan')),
+              ElevatedButton(
+                onPressed: _saveSettings,
+                child: const Text('💾 Simpan Pengaturan'),
+              ),
             ],
           ),
         ),
