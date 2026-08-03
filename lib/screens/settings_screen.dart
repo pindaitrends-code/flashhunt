@@ -55,6 +55,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _scanInstalledApps();
   }
 
+  // ✅ SCAN APPS TERINSTAL
   Future<void> _scanInstalledApps() async {
     setState(() => _isScanning = true);
     try {
@@ -79,6 +80,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() => _isScanning = false);
   }
 
+  // ✅ LOAD SETTINGS
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -95,6 +97,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
   }
 
+  // ✅ SAVE SETTINGS
   Future<void> _saveSettings() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('enable_notification', _enableNotification);
@@ -113,6 +116,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('✅ Pengaturan disimpan!')));
   }
 
+  // ✅ TAMBAH MARKETPLACE
   void _addNewMarketplace() {
     if (_newMarketplacePackage.isNotEmpty && _newMarketplaceName.isNotEmpty) {
       setState(() {
@@ -126,6 +130,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  // ✅ HAPUS MARKETPLACE
   void _removeMarketplace(String package) {
     if (_defaultMarketplaces.containsKey(package)) {
       setState(() {
@@ -145,11 +150,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
   }
 
+  // ✅ BUKA AKSESIBILITAS
   Future<void> _openAccessibilitySettings() async {
     try {
       await AccessibilityScanner.requestAccessibility();
     } catch (e) {
       print('❌ Error: $e');
+    }
+  }
+
+  // ✅ BUKA USAGE ACCESS (BARU!)
+  Future<void> _openUsageAccessSettings() async {
+    try {
+      await DeviceApps.openUsageAccessSettings();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Aktifkan izin "Akses Penggunaan" untuk FlashHunt'),
+          duration: Duration(seconds: 5),
+        ),
+      );
+    } catch (e) {
+      print('❌ Gagal buka usage access: $e');
+      try {
+        await DeviceApps.openAppSettings('com.flashhunt.flashhunt');
+      } catch (e2) {
+        print('❌ Gagal buka settings: $e2');
+      }
     }
   }
 
@@ -210,6 +236,52 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             label: const Text('Buka Aksesibilitas'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.green,
+                              foregroundColor: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // 🔓 IZIN PENGGUNAAN (BARU!)
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.blue, width: 2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.list_alt, color: Colors.blue),
+                        SizedBox(width: 8),
+                        Text(
+                          '🔓 Izin Penggunaan (Usage Access)',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Aktifkan izin ini agar FlashHunt bisa mendeteksi aplikasi marketplace yang terinstal di HP Anda',
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: _openUsageAccessSettings,
+                            icon: const Icon(Icons.settings),
+                            label: const Text('Buka Izin Penggunaan'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
                               foregroundColor: Colors.white,
                             ),
                           ),
