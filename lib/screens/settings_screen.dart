@@ -27,29 +27,55 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _newMarketplaceName = '';
 
   final Map<String, String> _defaultMarketplaces = {
-  'com.shopee.id': 'Shopee',          // ✅ Diperbaiki
-  'com.tokopedia.tkpd': 'Tokopedia',  // ✅ Diperbaiki
-  'com.lazada.id': 'Lazada',          // ✅ Diperbaiki (asumsi)
-  'com.tiktok.id': 'TikTok',          // ✅ Diperbaiki (asumsi)
-  'com.blibli.id': 'Blibli',          // ✅ Diperbaiki (asumsi)
-};
+    'com.shopee': 'Shopee',
+    'com.tokopedia': 'Tokopedia',
+    'com.lazada': 'Lazada',
+    'com.blibli': 'Blibli',
+    'com.tiktok': 'TikTok',
+    'com.amazon': 'Amazon',
+    'com.bukalapak': 'Bukalapak',
+    'com.olx': 'OLX',
+  };
 
   final Map<String, IconData> _marketplaceIcons = {
-  'com.shopee.id': Icons.shopping_bag,        // ✅ Diperbaiki
-  'com.tokopedia.tkpd': Icons.storefront,     // ✅ Diperbaiki
-  'com.lazada.id': Icons.shopping_cart,       // ✅ Diperbaiki
-  'com.blibli.id': Icons.store,               // ✅ Diperbaiki
-  'com.tiktok.id': Icons.music_note,          // ✅ Diperbaiki
-  'com.amazon': Icons.shopping_cart,          // Tetap
-  'com.bukalapak': Icons.shop,                // Tetap
-  'com.olx': Icons.sell,                      // Tetap
-};
+    'com.shopee': Icons.shopping_bag,
+    'com.tokopedia': Icons.storefront,
+    'com.lazada': Icons.shopping_cart,
+    'com.blibli': Icons.store,
+    'com.tiktok': Icons.music_note,
+    'com.amazon': Icons.shopping_cart,
+    'com.bukalapak': Icons.shop,
+    'com.olx': Icons.sell,
+  };
 
   @override
   void initState() {
     super.initState();
     _loadSettings();
+    _addDefaultMarketplaces();  // ✅ FIX: TAMBAHKAN DEFAULT MANUAL
     _scanInstalledApps();
+  }
+
+  // ✅ TAMBAHKAN MARKETPLACE DEFAULT (MANUAL)
+  void _addDefaultMarketplaces() {
+    final List<String> defaultPackages = [
+      'com.shopee',
+      'com.tokopedia',
+      'com.lazada',
+      'com.blibli',
+      'com.tiktok',
+      'com.amazon',
+    ];
+    
+    for (var pkg in defaultPackages) {
+      if (!_marketplacePackages.contains(pkg)) {
+        _marketplacePackages.add(pkg);
+        _marketplaceEnabled[pkg] = true;
+        _marketplaceAffiliates[pkg] = '';
+        _marketplaceInstalled[pkg] = false;
+      }
+    }
+    setState(() {});
   }
 
   // ✅ SCAN APPS TERINSTAL
@@ -199,6 +225,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Filter hanya marketplace yang enabled
+    final enabledPackages = _marketplacePackages
+        .where((pkg) => _marketplaceEnabled[pkg] ?? false)
+        .toList();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('⚙️ Pengaturan'),
@@ -358,7 +389,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                   Text(
-                    '${_marketplacePackages.where((p) => _marketplaceEnabled[p] ?? false).length} aktif',
+                    '${enabledPackages.length} aktif',
                     style: TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 ],
@@ -370,7 +401,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               const SizedBox(height: 16),
 
-              ..._marketplacePackages.map((pkg) {
+              ...enabledPackages.map((pkg) {
                 final name = _defaultMarketplaces[pkg] ?? pkg;
                 final isInstalled = _marketplaceInstalled[pkg] ?? false;
                 final isEnabled = _marketplaceEnabled[pkg] ?? true;
@@ -423,6 +454,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                         '✓ Terinstal',
                                         style: TextStyle(fontSize: 9, color: Colors.green, fontWeight: FontWeight.bold),
                                       ),
+                                    )
+                                  else
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey.withOpacity(0.2),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: const Text(
+                                        '✗ Tidak terinstal',
+                                        style: TextStyle(fontSize: 9, color: Colors.grey),
+                                      ),
                                     ),
                                 ],
                               ),
@@ -441,7 +484,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           child: TextField(
                             enabled: isEnabled,
                             decoration: InputDecoration(
-                              hintText: isInstalled ? 'ID Afiliasi' : 'Tidak terinstal',
+                              hintText: isInstalled ? 'ID Afiliasi' : 'ID Afiliasi',
                               border: const OutlineInputBorder(),
                               contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               isDense: true,
