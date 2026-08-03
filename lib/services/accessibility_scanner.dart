@@ -52,24 +52,18 @@ class AccessibilityScanner {
     }
   }
 
-  static Future<void> _checkEnabled() async {
-    _isEnabled = await isAccessibilityEnabled();
-    print('🔄 Accessibility: ${_isEnabled ? "✅ Aktif" : "❌ Nonaktif"}');
+  // ✅ DETEKSI APLIKASI FOREGROUND VIA AKSESIBILITAS
+  static Future<String?> getForegroundApp() async {
+    try {
+      final result = await _channel.invokeMethod('getForegroundApp');
+      return result as String?;
+    } catch (e) {
+      print('❌ Error get foreground app: $e');
+      return null;
+    }
   }
 
-  static void _startPeriodicScan() {
-    _scanTimer?.cancel();
-    _scanTimer = Timer.periodic(
-      const Duration(seconds: 10),
-      (timer) {
-        if (_isEnabled) {
-          scanMarketplace();
-        }
-      },
-    );
-    print('🔄 Periodic scan started every 10s');
-  }
-
+  // ✅ SCAN MARKETPLACE
   static Future<void> scanMarketplace() async {
     if (!_isEnabled) {
       print('❌ Accessibility disabled');
@@ -80,10 +74,59 @@ class AccessibilityScanner {
       final result = await _channel.invokeMethod('scanMarketplace');
       if (result != null) {
         print('📡 Scan result: $result');
+        
+        // ✅ DETEKSI FLASH SALE DARI SCAN
+        final Map<String, dynamic> data = result as Map<String, dynamic>;
+        if (data.containsKey('isFlashSale') && data['isFlashSale'] == true) {
+          print('🔥 FLASH SALE DETECTED via Accessibility!');
+          // Kirim notifikasi ke user
+          // Kirim ke WebSocket
+          // Kirim ke Webhook
+        }
       }
     } catch (e) {
       print('❌ Scan error: $e');
     }
+  }
+
+  // ✅ CEK APAKAH MARKETPLACE TERBUKA
+  static Future<bool> isMarketplaceOpen() async {
+    final String? foregroundApp = await getForegroundApp();
+    if (foregroundApp == null) return false;
+    
+    final List<String> marketplaces = [
+      'com.shopee',
+      'com.tokopedia',
+      'com.lazada',
+      'com.blibli',
+      'com.tiktok',
+      'com.amazon',
+    ];
+    
+    return marketplaces.any((pkg) => foregroundApp.contains(pkg));
+  }
+
+  static Future<void> _checkEnabled() async {
+    _isEnabled = await isAccessibilityEnabled();
+    print('🔄 Accessibility: ${_isEnabled ? "✅ Aktif" : "❌ Nonaktif"}');
+  }
+
+  static void _startPeriodicScan() {
+    _scanTimer?.cancel();
+    _scanTimer = Timer.periodic(
+      const Duration(seconds: 10),
+      (timer) async {
+        if (_isEnabled) {
+          // Cek apakah marketplace terbuka
+          bool isOpen = await isMarketplaceOpen();
+          if (isOpen) {
+            print('🛒 Marketplace sedang terbuka, scanning...');
+            await scanMarketplace();
+          }
+        }
+      },
+    );
+    print('🔄 Periodic scan started every 10s');
   }
 
   static void dispose() {
