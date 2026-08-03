@@ -32,11 +32,23 @@ class AccessibilityScanner {
     } catch (e) {
       print('❌ Gagal request accessibility: $e');
       try {
-        final String packageName = 'com.flashhunt.flashhunt';
-        await DeviceApps.openAppSettings(packageName);
+        await DeviceApps.openAppSettings('com.flashhunt.flashhunt');
       } catch (e2) {
         print('❌ Gagal buka settings: $e2');
       }
+    }
+  }
+
+  // ✅ CEK USAGE PERMISSION
+  static Future<bool> hasUsagePermission() async {
+    try {
+      List<Application> apps = await DeviceApps.getInstalledApplications(
+        includeSystemApps: false,
+        onlyAppsWithLaunchIntent: true,
+      );
+      return apps.isNotEmpty;
+    } catch (e) {
+      return false;
     }
   }
 

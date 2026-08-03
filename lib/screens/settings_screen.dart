@@ -52,11 +52,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     super.initState();
     _loadSettings();
-    _addDefaultMarketplaces();  // ✅ FIX: TAMBAHKAN DEFAULT MANUAL
+    _addDefaultMarketplaces();  // ✅ PASTIKAN INI ADA!
     _scanInstalledApps();
   }
 
-  // ✅ TAMBAHKAN MARKETPLACE DEFAULT (MANUAL)
+  // ✅ TAMBAHKAN DEFAULT MARKETPLACE OTOMATIS
   void _addDefaultMarketplaces() {
     final List<String> defaultPackages = [
       'com.shopee',
@@ -86,19 +86,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
         includeSystemApps: false,
         onlyAppsWithLaunchIntent: true,
       );
-      for (var pkg in _defaultMarketplaces.keys) {
+      for (var pkg in _marketplacePackages) {
         bool isInstalled = apps.any((app) => app.packageName == pkg);
         setState(() {
           _marketplaceInstalled[pkg] = isInstalled;
-          if (isInstalled && !_marketplacePackages.contains(pkg)) {
-            _marketplacePackages.add(pkg);
-            _marketplaceEnabled[pkg] = true;
-          }
         });
       }
       print('✅ Auto-scan selesai!');
     } catch (e) {
       print('❌ Auto-scan error: $e');
+      // Jika error, berarti Usage Access belum aktif
+      _showUsageAccessGuide();
     }
     setState(() => _isScanning = false);
   }
@@ -451,7 +449,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                       child: const Text(
-                                        '✓ Terinstal',
+                                        '✅ Terinstal',
                                         style: TextStyle(fontSize: 9, color: Colors.green, fontWeight: FontWeight.bold),
                                       ),
                                     )
@@ -463,7 +461,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                       child: const Text(
-                                        '✗ Tidak terinstal',
+                                        '❌ Tidak terinstal',
                                         style: TextStyle(fontSize: 9, color: Colors.grey),
                                       ),
                                     ),
@@ -484,7 +482,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           child: TextField(
                             enabled: isEnabled,
                             decoration: InputDecoration(
-                              hintText: isInstalled ? 'ID Afiliasi' : 'ID Afiliasi',
+                              hintText: 'ID Afiliasi',
                               border: const OutlineInputBorder(),
                               contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               isDense: true,
