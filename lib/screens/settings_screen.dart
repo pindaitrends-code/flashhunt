@@ -49,12 +49,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
   };
 
   @override
-  void initState() {
-    super.initState();
-    _loadSettings();
-    _addDefaultMarketplaces();  // ✅ PASTIKAN INI ADA!
-    _scanInstalledApps();
-  }
+void initState() {
+  super.initState();
+  _initializeData();
+}
+
+Future<void> _initializeData() async {
+  // 1. Load settings dulu
+  await _loadSettings();
+  
+  // 2. Tambahkan default marketplace (jika belum ada)
+  _addDefaultMarketplaces();
+  
+  // 3. Scan aplikasi terinstal
+  await _scanInstalledApps();
+  
+  // 4. Refresh UI
+  setState(() {});
+}
 
   // ✅ TAMBAHKAN DEFAULT MARKETPLACE OTOMATIS
   void _addDefaultMarketplaces() {
