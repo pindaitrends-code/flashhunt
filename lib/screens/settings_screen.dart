@@ -162,16 +162,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   // ✅ BUKA SETTINGS + PANDUAN USAGE ACCESS
   Future<void> _openUsageAccessSettings() async {
     try {
-      // Buka settings aplikasi FlashHunt
       await DeviceApps.openAppSettings('com.flashhunt.flashhunt');
       _showUsageAccessGuide();
     } catch (e) {
       print('❌ Gagal buka settings: $e');
-      try {
-        await DeviceApps.openAppSettings('com.flashhunt.flashhunt');
-      } catch (e2) {
-        print('❌ Gagal buka settings: $e2');
-      }
     }
   }
 
@@ -274,7 +268,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               const SizedBox(height: 16),
 
-              // 🔓 IZIN PENGGUNAAN (BARU!)
+              // 🔓 IZIN PENGGUNAAN
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -519,6 +513,57 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     const Text(
                       '⚠️ Package harus sesuai dengan aplikasi di HP',
                       style: TextStyle(fontSize: 10, color: Colors.orange),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // ✅ TOMBOL SCAN MANUAL
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.purple, width: 2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.search, color: Colors.purple),
+                        SizedBox(width: 8),
+                        Text(
+                          '🔍 Scan Marketplace',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Klik tombol di bawah untuk memindai ulang aplikasi marketplace yang terinstal',
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+                          setState(() => _isScanning = true);
+                          await _scanInstalledApps();
+                          setState(() => _isScanning = false);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('✅ Scan selesai! Marketplace terdeteksi.')),
+                          );
+                        },
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Scan Marketplace Sekarang'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.purple,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
                     ),
                   ],
                 ),
