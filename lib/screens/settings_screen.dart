@@ -168,7 +168,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     } catch (e) {
       print('❌ Gagal buka settings: $e');
       try {
-        await DeviceApps.openAppSettings();
+        await DeviceApps.openAppSettings('com.flashhunt.flashhunt');
       } catch (e2) {
         print('❌ Gagal buka settings: $e2');
       }
