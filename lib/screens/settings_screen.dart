@@ -27,26 +27,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _newMarketplaceName = '';
 
   final Map<String, String> _defaultMarketplaces = {
-    'com.shopee': 'Shopee',
-    'com.tokopedia': 'Tokopedia',
-    'com.lazada': 'Lazada',
-    'com.blibli': 'Blibli',
-    'com.tiktok': 'TikTok',
-    'com.amazon': 'Amazon',
-    'com.bukalapak': 'Bukalapak',
-    'com.olx': 'OLX',
-  };
+  'com.shopee.id': 'Shopee',          // ✅ Diperbaiki
+  'com.tokopedia.tkpd': 'Tokopedia',  // ✅ Diperbaiki
+  'com.lazada.id': 'Lazada',          // ✅ Diperbaiki (asumsi)
+  'com.tiktok.id': 'TikTok',          // ✅ Diperbaiki (asumsi)
+  'com.blibli.id': 'Blibli',          // ✅ Diperbaiki (asumsi)
+};
 
   final Map<String, IconData> _marketplaceIcons = {
-    'com.shopee': Icons.shopping_bag,
-    'com.tokopedia': Icons.storefront,
-    'com.lazada': Icons.shopping_cart,
-    'com.blibli': Icons.store,
-    'com.tiktok': Icons.music_note,
-    'com.amazon': Icons.shopping_cart,
-    'com.bukalapak': Icons.shop,
-    'com.olx': Icons.sell,
-  };
+  'com.shopee.id': Icons.shopping_bag,        // ✅ Diperbaiki
+  'com.tokopedia.tkpd': Icons.storefront,     // ✅ Diperbaiki
+  'com.lazada.id': Icons.shopping_cart,       // ✅ Diperbaiki
+  'com.blibli.id': Icons.store,               // ✅ Diperbaiki
+  'com.tiktok.id': Icons.music_note,          // ✅ Diperbaiki
+  'com.amazon': Icons.shopping_cart,          // Tetap
+  'com.bukalapak': Icons.shop,                // Tetap
+  'com.olx': Icons.sell,                      // Tetap
+};
 
   @override
   void initState() {
