@@ -159,24 +159,51 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  // ✅ BUKA USAGE ACCESS (BARU!)
+  // ✅ BUKA SETTINGS + PANDUAN USAGE ACCESS
   Future<void> _openUsageAccessSettings() async {
     try {
-      await DeviceApps.openUsageAccessSettings();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Aktifkan izin "Akses Penggunaan" untuk FlashHunt'),
-          duration: Duration(seconds: 5),
-        ),
-      );
+      // Buka settings aplikasi FlashHunt
+      await DeviceApps.openAppSettings('com.flashhunt.flashhunt');
+      _showUsageAccessGuide();
     } catch (e) {
-      print('❌ Gagal buka usage access: $e');
+      print('❌ Gagal buka settings: $e');
       try {
-        await DeviceApps.openAppSettings('com.flashhunt.flashhunt');
+        await DeviceApps.openAppSettings();
       } catch (e2) {
         print('❌ Gagal buka settings: $e2');
       }
     }
+  }
+
+  // ✅ TAMPILKAN PANDUAN
+  void _showUsageAccessGuide() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('🔓 Cara Aktifkan Izin Penggunaan'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: const [
+            Text('📌 Ikuti langkah berikut:'),
+            SizedBox(height: 8),
+            Text('1. Buka Settings HP'),
+            Text('2. Cari "Izin Khusus" atau "Special App Access"'),
+            Text('3. Pilih "Akses Penggunaan" atau "Usage Access"'),
+            Text('4. Aktifkan FlashHunt'),
+            SizedBox(height: 12),
+            Text('⚡ Tips: Pakai fitur pencarian 🔍'),
+            Text('   ketik "usage" atau "akses"'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
